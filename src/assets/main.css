@@ -1,0 +1,56 @@
+@import './base.css';
+
+:root {
+  --primary-color: #e74c3c;
+  --secondary-color: #ff9b11;
+}
+
+html, 
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#app {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Map Container Styles */
+.map-container {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+
+/* Leaflet Map Overrides */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+}
+
+.leaflet-control-container .leaflet-top,
+.leaflet-control-container .leaflet-bottom {
+  z-index: 1000;
+}
+
+/* Control Panel z-index hierarchy */
+.map-controls {
+  z-index: 1100;
+}
+
+/* Utility Classes */
+.flex {
+  display: flex;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
