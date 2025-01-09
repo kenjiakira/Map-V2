@@ -66,7 +66,7 @@ onUnmounted(() => {
 <style scoped>
 .gps-control {
   position: fixed;
-  right: 20px; /* Changed from left to right */
+  right: 20px; 
   bottom: 120px;
   z-index: 1000;
 }
@@ -74,7 +74,7 @@ onUnmounted(() => {
 .gps-button {
   width: 40px;
   height: 40px;
-  border-radius: 50%; /* Changed to circle */
+  border-radius: 50%;
   background: white;
   border: none;
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
@@ -98,7 +98,7 @@ onUnmounted(() => {
 }
 
 .gps-icon.gps-active {
-  color: #4285f4; /* Google Maps blue */
+  color: #4285f4;
 }
 
 .gps-active {

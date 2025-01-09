@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, onUnmounted } from 'vue';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import MapControls from '../components/MapControls.vue';
@@ -31,11 +31,22 @@ L.Icon.Default.mergeOptions({
 
 const mapRef = ref<HTMLElement | null>(null);
 const map = ref<L.Map | null>(null);
+const searchMarkers = ref<L.Marker[]>([]); // Thêm array để lưu search markers
 const DEFAULT_CENTER = [21.0285, 105.8542];
 const DEFAULT_ZOOM = 13;
 
 const userMarker = ref<L.Marker | null>(null);
 const userCircle = ref<L.Circle | null>(null);
+
+// Thêm custom icon cho search markers
+const searchIcon = L.icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
 
 const handleMapStyleChange = (style: string) => {
   if (!map.value) return;
@@ -96,13 +107,29 @@ const handleLocationUpdate = (location: { lat: number; lng: number; accuracy: nu
 const handleSearchSelect = (location: { lat: number; lng: number; name: string }) => {
   if (!map.value) return;
   
-  map.value.setView([location.lat, location.lng], 16);
-  
-  // Optional: Add a marker at the selected location
-  L.marker([location.lat, location.lng])
+  // Sử dụng icon mới cho marker
+  const marker = L.marker([location.lat, location.lng], {
+    icon: searchIcon
+  })
     .addTo(map.value)
     .bindPopup(location.name)
     .openPopup();
+    
+  // Lưu marker vào array
+  searchMarkers.value.push(marker);
+  
+  // Di chuyển map đến vị trí mới
+  map.value.setView([location.lat, location.lng], 16);
+};
+
+// Thêm function để xóa markers (optional)
+const clearSearchMarkers = () => {
+  searchMarkers.value.forEach(marker => {
+    if (map.value) {
+      map.value.removeLayer(marker);
+    }
+  });
+  searchMarkers.value = [];
 };
 
 onMounted(() => {
@@ -119,6 +146,11 @@ onMounted(() => {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map.value);
   }
+});
+
+// Optional: Cleanup khi component unmount
+onUnmounted(() => {
+  clearSearchMarkers();
 });
 </script>
 
