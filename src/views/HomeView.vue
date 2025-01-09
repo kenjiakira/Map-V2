@@ -14,7 +14,7 @@ const router = useRouter();
 onMounted(() => {
   setTimeout(() => {
     router.push('/map');
-  }, 2000); // Redirect after 2 seconds
+  }, 2000);
 });
 </script>
 

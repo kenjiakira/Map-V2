@@ -1,10 +1,12 @@
 <template>
   <div class="map-container">
+    <SearchControl @selectLocation="handleSearchSelect" />
     <div id="map" ref="mapRef"></div>
     <MapControls 
       @changeMapStyle="handleMapStyleChange"
       @toggleTraffic="handleTrafficToggle"
     />
+    <GpsControl @locationUpdate="handleLocationUpdate" />
   </div>
 </template>
 
@@ -13,8 +15,9 @@ import { onMounted, ref } from 'vue';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import MapControls from '../components/MapControls.vue';
+import GpsControl from '../components/GpsControl.vue';
+import SearchControl from '../components/SearchControl.vue';
 
-// Fix Leaflet icon issue
 import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
@@ -29,6 +32,10 @@ L.Icon.Default.mergeOptions({
 const mapRef = ref<HTMLElement | null>(null);
 const map = ref<L.Map | null>(null);
 const DEFAULT_CENTER = [21.0285, 105.8542];
+const DEFAULT_ZOOM = 13;
+
+const userMarker = ref<L.Marker | null>(null);
+const userCircle = ref<L.Circle | null>(null);
 
 const handleMapStyleChange = (style: string) => {
   if (!map.value) return;
@@ -56,6 +63,48 @@ const handleTrafficToggle = (show: boolean) => {
   console.log('Traffic toggle:', show);
 };
 
+const handleLocationUpdate = (location: { lat: number; lng: number; accuracy: number }) => {
+  if (!map.value) return;
+
+  const newLatLng = [location.lat, location.lng] as L.LatLngExpression;
+
+  // Update or create user marker
+  if (!userMarker.value) {
+    userMarker.value = L.marker(newLatLng).addTo(map.value);
+  } else {
+    userMarker.value.setLatLng(newLatLng);
+  }
+
+  // Update or create accuracy circle
+  if (!userCircle.value) {
+    userCircle.value = L.circle(newLatLng, {
+      radius: location.accuracy,
+      color: '#4A90E2',
+      fillColor: '#4A90E2',
+      fillOpacity: 0.2,
+      weight: 1
+    }).addTo(map.value);
+  } else {
+    userCircle.value.setLatLng(newLatLng);
+    userCircle.value.setRadius(location.accuracy);
+  }
+
+  // Pan map to new location
+  map.value.panTo(newLatLng);
+};
+
+const handleSearchSelect = (location: { lat: number; lng: number; name: string }) => {
+  if (!map.value) return;
+  
+  map.value.setView([location.lat, location.lng], 16);
+  
+  // Optional: Add a marker at the selected location
+  L.marker([location.lat, location.lng])
+    .addTo(map.value)
+    .bindPopup(location.name)
+    .openPopup();
+};
+
 onMounted(() => {
   if (mapRef.value) {
     map.value = L.map(mapRef.value, {
@@ -75,7 +124,7 @@ onMounted(() => {
 
 <style>
 .map-container {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
